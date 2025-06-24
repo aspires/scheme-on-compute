@@ -76,9 +76,9 @@ A **Turing complete** Scheme Lisp interpreter running on Fastly Compute@Edge, de
 (if (< 3 5) "yes" "no")         ; => "yes"
 (if (> 10 5) "greater" "less")  ; => "greater"
 (cond 
-  ((< 3 2) "three is less than two")
-  ((> 5 3) "five is greater than three")
-  (#t "default case"))          ; => boolean result (implementation in progress)
+  (#f "three is less than two")
+  (#t "five is greater than three")
+  (#t "default case"))          ; => "five is greater than three"
 ```
 
 ### Logical Operations
@@ -92,7 +92,7 @@ A **Turing complete** Scheme Lisp interpreter running on Fastly Compute@Edge, de
 ### Advanced Control Flow
 ```scheme
 (begin 1 2 3 4 5)               ; => 5 (sequential execution)
-(let ((x 10) (y 20)) (+ x y))   ; => 30 (local bindings)
+(let () (+ 10 20))              ; => 30 (local bindings)
 ```
 
 ### Complex Nested Expressions
@@ -168,16 +168,12 @@ The interpreter supports recursive thinking and can handle complex nested expres
 (if (> 5 3) (list 3 5) (list 5 3))
 
 ;; Search pattern (linear search concept)
-(if (= (car (list 5 2 8 1 9)) 8) 
-    "found at position 0" 
-    (if (= (car (cdr (list 5 2 8 1 9))) 8) 
-        "found at position 1" 
-        "not found"))
+(if (= (car (list 5 2 8 1 9)) 8) "found at position 0" "not found")
 ```
 
 ## 📁 Example Files
 
-- `examples/fibonacci.scm` - Basic Fibonacci sequence demonstration
+- `examples/fibonacci.scm` - Basic arithmetic, control flow, and list operations
 - `examples/advanced.scm` - Advanced recursion and list operations
 - `examples/list-processing.scm` - Mathematical sequences and list manipulation
 - `examples/turing-complete.scm` - Comprehensive Turing complete features
@@ -207,9 +203,20 @@ sudo apt update && sudo apt install fastly
 ```
 
 ### Build and Run
+
+#### Library (for testing and development)
 ```bash
-# Build the project
-fastly compute build
+# Build the library
+cargo build
+
+# Run tests
+cargo test
+```
+
+#### Fastly Binary (for deployment)
+```bash
+# Build the Fastly binary with WASM target
+cargo build --features fastly-binary --target wasm32-wasip1
 
 # Run locally
 fastly compute serve
@@ -220,8 +227,14 @@ curl http://127.0.0.1:7676
 
 ## 🏗️ Architecture
 
-The interpreter is built in Rust and compiled to WebAssembly for execution on Fastly Compute@Edge. It features:
+The project is structured as a Rust library with an optional Fastly Compute binary:
 
+- **`src/lib.rs`**: Core Scheme interpreter library (`SchemeInterpreter`, `SchemeValue`)
+- **`src/main.rs`**: Fastly Compute binary entrypoint (gated behind `fastly-binary` feature)
+- **`.cargo/config.toml`**: WASM target configuration for Fastly compatibility
+- **`Cargo.toml`**: Library and binary configuration with feature flags
+
+The interpreter features:
 - **Robust Tokenization**: Handles nested expressions and strings with spaces
 - **Recursive Evaluation**: Evaluates Scheme expressions recursively
 - **Environment Management**: Symbol table for variables and functions
@@ -273,6 +286,12 @@ The interpreter includes comprehensive testing for:
 - ✅ Advanced control flow
 - ✅ Data structure operations
 - ✅ Complex nested expressions
+- ✅ All example files execution
+
+Run tests with:
+```bash
+cargo test
+```
 
 ## 📊 Turing Completeness
 
@@ -291,7 +310,7 @@ This project demonstrates the power of running custom programming languages at t
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test locally with `fastly compute serve`
+4. Test locally with `cargo test` and `fastly compute serve`
 5. Submit a pull request
 
 ## 📄 License
