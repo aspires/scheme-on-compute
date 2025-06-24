@@ -1,14 +1,12 @@
-use fastly::http::{Method, StatusCode};
-use fastly::{mime, Error, Request, Response};
 use std::collections::HashMap;
 
 // Simple Scheme interpreter for demonstration
-struct SchemeInterpreter {
+pub struct SchemeInterpreter {
     env: HashMap<String, SchemeValue>,
 }
 
 #[derive(Clone, Debug)]
-enum SchemeValue {
+pub enum SchemeValue {
     String(String),
     Number(f64),
     Boolean(bool),
@@ -26,7 +24,7 @@ enum SchemeValue {
 }
 
 impl SchemeInterpreter {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let mut env = HashMap::new();
         
         // Add some basic functions
@@ -264,31 +262,60 @@ impl SchemeInterpreter {
         }));
 
         // Advanced control flow
-        env.insert("begin".to_string(), SchemeValue::Function(|args, env| {
+        env.insert("begin".to_string(), SchemeValue::Function(|args, _env| {
             if args.is_empty() {
                 return Ok(SchemeValue::Nil);
             }
             Ok(args.last().unwrap().clone())
         }));
 
-        env.insert("let".to_string(), SchemeValue::Function(|args, env| {
-            if args.len() < 2 {
-                return Err("let requires at least bindings and body".to_string());
+        env.insert("let".to_string(), SchemeValue::Function(|args, _env| {
+            if args.is_empty() {
+                return Ok(SchemeValue::Nil);
             }
-            Ok(args.last().unwrap().clone())
+            // For now, just return the last argument (the body)
+            // In a full implementation, this would evaluate bindings and create a new environment
+            if args.len() >= 2 {
+                Ok(args.last().unwrap().clone())
+            } else {
+                Ok(args[0].clone())
+            }
         }));
 
-        env.insert("cond".to_string(), SchemeValue::Function(|args, env| {
+        env.insert("cond".to_string(), SchemeValue::Function(|args, _env| {
             if args.is_empty() {
                 return Ok(SchemeValue::Nil);
             }
             
-            // For this specific test case, we know the first condition is true
-            // So just return the first result
-            if args.len() >= 2 {
-                Ok(args[1].clone())
+            // Process condition-result pairs
+            // Each pair should be a list with [condition result]
+            for i in (0..args.len()).step_by(2) {
+                if i + 1 < args.len() {
+                    // Check if this is a condition-result pair
+                    let condition = &args[i];
+                    let result = &args[i + 1];
+                    
+                    // Evaluate the condition
+                    match condition {
+                        SchemeValue::Boolean(true) => {
+                            return Ok(result.clone());
+                        }
+                        SchemeValue::Boolean(false) => {
+                            continue; // Try next pair
+                        }
+                        _ => {
+                            // For non-boolean conditions, treat as true if not false
+                            return Ok(result.clone());
+                        }
+                    }
+                }
+            }
+            
+            // If no condition was true, return the last argument or nil
+            if !args.is_empty() {
+                Ok(args.last().unwrap().clone())
             } else {
-                Ok(args[0].clone())
+                Ok(SchemeValue::Nil)
             }
         }));
 
@@ -297,7 +324,7 @@ impl SchemeInterpreter {
             Ok(SchemeValue::Vector(args.to_vec()))
         }));
 
-        env.insert("make-hash-table".to_string(), SchemeValue::Function(|args, _| {
+        env.insert("make-hash-table".to_string(), SchemeValue::Function(|_args, _| {
             Ok(SchemeValue::HashTable(std::collections::HashMap::new()))
         }));
 
@@ -306,7 +333,7 @@ impl SchemeInterpreter {
                 return Err("hash-set! requires exactly three arguments".to_string());
             }
             match (&args[0], &args[1], &args[2]) {
-                (SchemeValue::HashTable(_), SchemeValue::String(key), value) => {
+                (SchemeValue::HashTable(_), SchemeValue::String(_key), value) => {
                     // In a full implementation, this would modify the hash table
                     Ok(value.clone())
                 }
@@ -356,14 +383,14 @@ impl SchemeInterpreter {
         }));
 
         // Loop constructs
-        env.insert("while".to_string(), SchemeValue::Function(|args, env| {
+        env.insert("while".to_string(), SchemeValue::Function(|args, _env| {
             if args.len() < 2 {
                 return Err("while requires at least condition and body".to_string());
             }
             Ok(args[0].clone())
         }));
 
-        env.insert("for-each".to_string(), SchemeValue::Function(|args, env| {
+        env.insert("for-each".to_string(), SchemeValue::Function(|args, _env| {
             if args.len() < 2 {
                 return Err("for-each requires at least function and list".to_string());
             }
@@ -404,7 +431,7 @@ impl SchemeInterpreter {
             }
             match &args[0] {
                 SchemeValue::Number(n) => Ok(SchemeValue::Number(n.abs())),
-                _ => Err("abs requires a number".to_string()),
+                _ => Err("abs requires a numeric argument".to_string()),
             }
         }));
 
@@ -413,14 +440,8 @@ impl SchemeInterpreter {
                 return Err("sqrt requires exactly one argument".to_string());
             }
             match &args[0] {
-                SchemeValue::Number(n) => {
-                    if *n < 0.0 {
-                        Err("sqrt requires a non-negative number".to_string())
-                    } else {
-                        Ok(SchemeValue::Number(n.sqrt()))
-                    }
-                }
-                _ => Err("sqrt requires a number".to_string()),
+                SchemeValue::Number(n) => Ok(SchemeValue::Number(n.sqrt())),
+                _ => Err("sqrt requires a numeric argument".to_string()),
             }
         }));
 
@@ -435,17 +456,22 @@ impl SchemeInterpreter {
                 _ => Err("expt requires numeric arguments".to_string()),
             }
         }));
-        
+
         Self { env }
     }
-    
-    fn eval(&self, expr: &str) -> Result<SchemeValue, String> {
+
+    pub fn eval(&self, expr: &str) -> Result<SchemeValue, String> {
         // Simple parser and evaluator
         let expr = expr.trim();
         
         // Handle empty expressions
         if expr.is_empty() {
             return Err("Empty expression".to_string());
+        }
+        
+        // Handle nil/empty list tokens first
+        if expr == "nil" || expr == "()" {
+            return Ok(SchemeValue::Nil);
         }
         
         // Handle function calls (expressions starting with '(')
@@ -496,11 +522,6 @@ impl SchemeInterpreter {
         }
         if expr == "#f" {
             return Ok(SchemeValue::Boolean(false));
-        }
-        
-        // Check if it's nil
-        if expr == "nil" || expr == "()" {
-            return Ok(SchemeValue::Nil);
         }
         
         // Check if it's a variable/symbol
@@ -589,7 +610,7 @@ impl SchemeInterpreter {
         Ok(tokens)
     }
     
-    fn run_program(&self, program: &str) -> Result<String, String> {
+    pub fn run_program(&self, program: &str) -> Result<String, String> {
         let lines: Vec<&str> = program.lines().collect();
         let mut output = String::new();
         
@@ -620,7 +641,7 @@ impl SchemeInterpreter {
         Ok(output)
     }
 
-    fn display_value(&self, value: &SchemeValue) -> String {
+    pub fn display_value(&self, value: &SchemeValue) -> String {
         match value {
             SchemeValue::String(s) => s.clone(),
             SchemeValue::Number(n) => n.to_string(),
@@ -650,144 +671,4 @@ impl SchemeInterpreter {
             SchemeValue::Nil => "()".to_string(),
         }
     }
-}
-
-#[fastly::main]
-fn main(req: Request) -> Result<Response, Error> {
-    // Include the example files at compile time
-    const FIBONACCI_EXAMPLE: &str = include_str!("../examples/fibonacci.scm");
-    const ADVANCED_EXAMPLE: &str = include_str!("../examples/advanced.scm");
-    const LIST_PROCESSING_EXAMPLE: &str = include_str!("../examples/list-processing.scm");
-    const TURING_COMPLETE_EXAMPLE: &str = include_str!("../examples/turing-complete.scm");
-    const COMPUTATIONAL_PATTERNS_EXAMPLE: &str = include_str!("../examples/computational-patterns.scm");
-    
-    // Only allow GET requests
-    match req.get_method() {
-        &Method::GET => (),
-        _ => {
-            return Ok(Response::from_status(StatusCode::METHOD_NOT_ALLOWED)
-                .with_content_type(mime::TEXT_PLAIN_UTF_8)
-                .with_body("Method not allowed"));
-        }
-    }
-    
-    // Create Scheme interpreter
-    let interpreter = SchemeInterpreter::new();
-    
-    // Run the example files
-    let mut output = String::new();
-    
-    // Run Fibonacci example
-    output.push_str("=== FIBONACCI EXAMPLE ===\n");
-    match interpreter.run_program(FIBONACCI_EXAMPLE) {
-        Ok(result) => output.push_str(&result),
-        Err(e) => output.push_str(&format!("Error running fibonacci.scm: {}\n", e)),
-    }
-    output.push_str("\n");
-    
-    // Run Advanced example
-    output.push_str("=== ADVANCED EXAMPLE ===\n");
-    match interpreter.run_program(ADVANCED_EXAMPLE) {
-        Ok(result) => output.push_str(&result),
-        Err(e) => output.push_str(&format!("Error running advanced.scm: {}\n", e)),
-    }
-    output.push_str("\n");
-    
-    // Run List Processing example
-    output.push_str("=== LIST PROCESSING EXAMPLE ===\n");
-    match interpreter.run_program(LIST_PROCESSING_EXAMPLE) {
-        Ok(result) => output.push_str(&result),
-        Err(e) => output.push_str(&format!("Error running list-processing.scm: {}\n", e)),
-    }
-    output.push_str("\n");
-    
-    // Run Turing Complete example
-    output.push_str("=== TURING COMPLETE EXAMPLE ===\n");
-    match interpreter.run_program(TURING_COMPLETE_EXAMPLE) {
-        Ok(result) => output.push_str(&result),
-        Err(e) => output.push_str(&format!("Error running turing-complete.scm: {}\n", e)),
-    }
-    output.push_str("\n");
-    
-    // Run Computational Patterns example
-    output.push_str("=== COMPUTATIONAL PATTERNS EXAMPLE ===\n");
-    match interpreter.run_program(COMPUTATIONAL_PATTERNS_EXAMPLE) {
-        Ok(result) => output.push_str(&result),
-        Err(e) => output.push_str(&format!("Error running computational-patterns.scm: {}\n", e)),
-    }
-    output.push_str("\n");
-    
-    let html_content = format!(
-        r#"<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scheme Lisp on Fastly Compute</title>
-    <style>
-        body {{
-            font-family: 'Courier New', monospace;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            min-height: 100vh;
-        }}
-        .container {{
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }}
-        h1 {{
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }}
-        .scheme-output {{
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 4px solid #4CAF50;
-            white-space: pre-wrap;
-            font-size: 1.1em;
-            line-height: 1.6;
-        }}
-        .info {{
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            border-left: 4px solid #2196F3;
-        }}
-        .highlight {{
-            color: #4CAF50;
-            font-weight: bold;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🚀 Scheme Lisp on Fastly Compute</h1>
-        
-        <div class="scheme-output">{}</div>
-        
-        <div class="info">
-            <h3>About this demo:</h3>
-            <p>This page demonstrates a simple Scheme Lisp interpreter running on <span class="highlight">Fastly Compute@Edge</span>.</p>
-            <p>The Scheme code is executed server-side and the results are displayed above.</p>
-            <p>This shows how you can run custom programming languages at the edge for dynamic content generation.</p>
-        </div>
-    </div>
-</body>
-</html>"#,
-        output
-    );
-    
-    Ok(Response::from_status(StatusCode::OK)
-        .with_content_type(mime::TEXT_HTML_UTF_8)
-        .with_body(html_content))
 } 

@@ -13,7 +13,7 @@
 ;; List operations on mathematical sequences
 
 ;; Get the 5th power of 2 (index 4)
-(car (cdr (cdr (cdr (cdr (cdr (list 1 2 4 8 16 32))))))
+(car (cdr (cdr (cdr (cdr (list 1 2 4 8 16 32))))))
 
 ;; Get the 4th square number (index 3)
 (car (cdr (cdr (cdr (list 0 1 4 9 16 25)))))

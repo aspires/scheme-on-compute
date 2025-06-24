@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use lisp_compute::{SchemeInterpreter, SchemeValue};
 
     #[test]
     fn test_scheme_interpreter_basic() {
