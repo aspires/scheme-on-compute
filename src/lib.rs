@@ -654,6 +654,13 @@ impl SchemeInterpreter {
 
 #[fastly::main]
 fn main(req: Request) -> Result<Response, Error> {
+    // Include the example files at compile time
+    const FIBONACCI_EXAMPLE: &str = include_str!("../examples/fibonacci.scm");
+    const ADVANCED_EXAMPLE: &str = include_str!("../examples/advanced.scm");
+    const LIST_PROCESSING_EXAMPLE: &str = include_str!("../examples/list-processing.scm");
+    const TURING_COMPLETE_EXAMPLE: &str = include_str!("../examples/turing-complete.scm");
+    const COMPUTATIONAL_PATTERNS_EXAMPLE: &str = include_str!("../examples/computational-patterns.scm");
+    
     // Only allow GET requests
     match req.get_method() {
         &Method::GET => (),
@@ -667,424 +674,48 @@ fn main(req: Request) -> Result<Response, Error> {
     // Create Scheme interpreter
     let interpreter = SchemeInterpreter::new();
     
-    // Test individual expressions
+    // Run the example files
     let mut output = String::new();
     
-    // Test basic expressions
-    match interpreter.eval("42") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("42 = {}\n", n)),
-                _ => output.push_str("42 = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating 42: {}\n", e)),
+    // Run Fibonacci example
+    output.push_str("=== FIBONACCI EXAMPLE ===\n");
+    match interpreter.run_program(FIBONACCI_EXAMPLE) {
+        Ok(result) => output.push_str(&result),
+        Err(e) => output.push_str(&format!("Error running fibonacci.scm: {}\n", e)),
     }
+    output.push_str("\n");
     
-    match interpreter.eval("(+ 1 2)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(+ 1 2) = {}\n", n)),
-                _ => output.push_str("(+ 1 2) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating (+ 1 2): {}\n", e)),
+    // Run Advanced example
+    output.push_str("=== ADVANCED EXAMPLE ===\n");
+    match interpreter.run_program(ADVANCED_EXAMPLE) {
+        Ok(result) => output.push_str(&result),
+        Err(e) => output.push_str(&format!("Error running advanced.scm: {}\n", e)),
     }
+    output.push_str("\n");
     
-    match interpreter.eval("#t") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("#t = {}\n", b)),
-                _ => output.push_str("#t = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating #t: {}\n", e)),
+    // Run List Processing example
+    output.push_str("=== LIST PROCESSING EXAMPLE ===\n");
+    match interpreter.run_program(LIST_PROCESSING_EXAMPLE) {
+        Ok(result) => output.push_str(&result),
+        Err(e) => output.push_str(&format!("Error running list-processing.scm: {}\n", e)),
     }
+    output.push_str("\n");
     
-    match interpreter.eval("(display \"Hello\")") {
-        Ok(result) => {
-            match result {
-                SchemeValue::String(s) => output.push_str(&format!("(display \"Hello\") = {}\n", s)),
-                _ => output.push_str("(display \"Hello\") = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating (display \"Hello\"): {}\n", e)),
+    // Run Turing Complete example
+    output.push_str("=== TURING COMPLETE EXAMPLE ===\n");
+    match interpreter.run_program(TURING_COMPLETE_EXAMPLE) {
+        Ok(result) => output.push_str(&result),
+        Err(e) => output.push_str(&format!("Error running turing-complete.scm: {}\n", e)),
     }
+    output.push_str("\n");
     
-    // Test arithmetic operations
-    match interpreter.eval("(+ 10 5)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(+ 10 5) = {}\n", n)),
-                _ => output.push_str("(+ 10 5) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating (+ 10 5): {}\n", e)),
+    // Run Computational Patterns example
+    output.push_str("=== COMPUTATIONAL PATTERNS EXAMPLE ===\n");
+    match interpreter.run_program(COMPUTATIONAL_PATTERNS_EXAMPLE) {
+        Ok(result) => output.push_str(&result),
+        Err(e) => output.push_str(&format!("Error running computational-patterns.scm: {}\n", e)),
     }
-    
-    match interpreter.eval("(- 10 5)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(- 10 5) = {}\n", n)),
-                _ => output.push_str("(- 10 5) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating (- 10 5): {}\n", e)),
-    }
-    
-    match interpreter.eval("(* 3 4)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(* 3 4) = {}\n", n)),
-                _ => output.push_str("(* 3 4) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating (* 3 4): {}\n", e)),
-    }
-    
-    // Test comparisons
-    match interpreter.eval("(< 3 5)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(< 3 5) = {}\n", b)),
-                _ => output.push_str("(< 3 5) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating (< 3 5): {}\n", e)),
-    }
-    
-    match interpreter.eval("(= 5 5)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(= 5 5) = {}\n", b)),
-                _ => output.push_str("(= 5 5) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating (= 5 5): {}\n", e)),
-    }
-    
-    // Test conditional logic
-    match interpreter.eval("(if (< 3 5) \"yes\" \"no\")") {
-        Ok(result) => {
-            match result {
-                SchemeValue::String(s) => output.push_str(&format!("(if (< 3 5) \"yes\" \"no\") = {}\n", s)),
-                _ => output.push_str("(if (< 3 5) \"yes\" \"no\") = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error evaluating (if (< 3 5) \"yes\" \"no\"): {}\n", e)),
-    }
-    
-    // Test list operations
-    output.push_str("\n--- List Operations ---\n");
-    
-    match interpreter.eval("(list 1 2 3)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::List(list) => {
-                    output.push_str("(list 1 2 3) = [");
-                    for (i, item) in list.iter().enumerate() {
-                        if i > 0 { output.push_str(", "); }
-                        match item {
-                            SchemeValue::Number(n) => output.push_str(&n.to_string()),
-                            _ => output.push_str("?"),
-                        }
-                    }
-                    output.push_str("]\n");
-                }
-                _ => output.push_str("(list 1 2 3) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(cons 1 (list 2 3))") {
-        Ok(result) => {
-            match result {
-                SchemeValue::List(list) => {
-                    output.push_str("(cons 1 (list 2 3)) = [");
-                    for (i, item) in list.iter().enumerate() {
-                        if i > 0 { output.push_str(", "); }
-                        match item {
-                            SchemeValue::Number(n) => output.push_str(&n.to_string()),
-                            _ => output.push_str("?"),
-                        }
-                    }
-                    output.push_str("]\n");
-                }
-                _ => output.push_str("(cons 1 (list 2 3)) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(car (list 1 2 3))") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(car (list 1 2 3)) = {}\n", n)),
-                _ => output.push_str("(car (list 1 2 3)) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(cdr (list 1 2 3))") {
-        Ok(result) => {
-            match result {
-                SchemeValue::List(list) => {
-                    output.push_str("(cdr (list 1 2 3)) = [");
-                    for (i, item) in list.iter().enumerate() {
-                        if i > 0 { output.push_str(", "); }
-                        match item {
-                            SchemeValue::Number(n) => output.push_str(&n.to_string()),
-                            _ => output.push_str("?"),
-                        }
-                    }
-                    output.push_str("]\n");
-                }
-                _ => output.push_str("(cdr (list 1 2 3)) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(null? (list))") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(null? (list)) = {}\n", b)),
-                _ => output.push_str("(null? (list)) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    // Test additional arithmetic
-    output.push_str("\n--- Advanced Arithmetic ---\n");
-    
-    match interpreter.eval("(/ 10 2)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(/ 10 2) = {}\n", n)),
-                _ => output.push_str("(/ 10 2) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(> 5 3)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(> 5 3) = {}\n", b)),
-                _ => output.push_str("(> 5 3) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(>= 5 5)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(>= 5 5) = {}\n", b)),
-                _ => output.push_str("(>= 5 5) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    // Test logical operations
-    output.push_str("\n--- Logical Operations ---\n");
-    
-    match interpreter.eval("(and #t #t)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(and #t #t) = {}\n", b)),
-                _ => output.push_str("(and #t #t) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(and #t #f)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(and #t #f) = {}\n", b)),
-                _ => output.push_str("(and #t #f) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(or #f #t)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(or #f #t) = {}\n", b)),
-                _ => output.push_str("(or #f #t) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(or #f #f)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(or #f #f) = {}\n", b)),
-                _ => output.push_str("(or #f #f) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    // Test advanced control flow
-    output.push_str("\n--- Advanced Control Flow ---\n");
-    
-    match interpreter.eval("(begin 1 2 3)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(begin 1 2 3) = {}\n", n)),
-                _ => output.push_str("(begin 1 2 3) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(cond (#t \"first\") (#f \"second\"))") {
-        Ok(result) => {
-            match result {
-                SchemeValue::String(s) => output.push_str(&format!("(cond (#t \"first\") (#f \"second\")) = {}\n", s)),
-                SchemeValue::Boolean(b) => output.push_str(&format!("(cond (#t \"first\") (#f \"second\")) = {}\n", b)),
-                SchemeValue::Number(n) => output.push_str(&format!("(cond (#t \"first\") (#f \"second\")) = {}\n", n)),
-                SchemeValue::List(list) => output.push_str(&format!("(cond (#t \"first\") (#f \"second\")) = list with {} items\n", list.len())),
-                _ => output.push_str(&format!("(cond (#t \"first\") (#f \"second\")) = other type: {:?}\n", result)),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    // Test data structures
-    output.push_str("\n--- Data Structures ---\n");
-    
-    match interpreter.eval("(vector 1 2 3 4 5)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Vector(ref vec) => {
-                    output.push_str("(vector 1 2 3 4 5) = ");
-                    output.push_str(&interpreter.display_value(&result));
-                    output.push_str("\n");
-                }
-                _ => output.push_str("(vector 1 2 3 4 5) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(vector-ref (vector 10 20 30 40) 2)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(vector-ref (vector 10 20 30 40) 2) = {}\n", n)),
-                _ => output.push_str("(vector-ref (vector 10 20 30 40) 2) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(vector-length (vector 1 2 3 4 5))") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(vector-length (vector 1 2 3 4 5)) = {}\n", n)),
-                _ => output.push_str("(vector-length (vector 1 2 3 4 5)) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(make-hash-table)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::HashTable(_) => output.push_str("(make-hash-table) = #<hash-table>\n"),
-                _ => output.push_str("(make-hash-table) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    // Test list processing
-    output.push_str("\n--- List Processing ---\n");
-    
-    match interpreter.eval("(length (list 1 2 3 4 5))") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(length (list 1 2 3 4 5)) = {}\n", n)),
-                _ => output.push_str("(length (list 1 2 3 4 5)) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(append (list 1 2) (list 3 4))") {
-        Ok(result) => {
-            match result {
-                SchemeValue::List(ref list) => {
-                    output.push_str("(append (list 1 2) (list 3 4)) = ");
-                    output.push_str(&interpreter.display_value(&result));
-                    output.push_str("\n");
-                }
-                _ => output.push_str("(append (list 1 2) (list 3 4)) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    // Test mathematical functions
-    output.push_str("\n--- Mathematical Functions ---\n");
-    
-    match interpreter.eval("(abs -15)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(abs -15) = {}\n", n)),
-                _ => output.push_str("(abs -15) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(sqrt 16)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(sqrt 16) = {}\n", n)),
-                _ => output.push_str("(sqrt 16) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(expt 2 8)") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Number(n) => output.push_str(&format!("(expt 2 8) = {}\n", n)),
-                _ => output.push_str("(expt 2 8) = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    // Test loop constructs (conceptual)
-    output.push_str("\n--- Loop Constructs (Conceptual) ---\n");
-    
-    match interpreter.eval("(while (< 3 5) \"loop\")") {
-        Ok(result) => {
-            match result {
-                SchemeValue::Boolean(b) => output.push_str(&format!("(while (< 3 5) \"loop\") = {}\n", b)),
-                _ => output.push_str("(while (< 3 5) \"loop\") = unexpected result\n"),
-            }
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
-    
-    match interpreter.eval("(for-each display (list 1 2 3))") {
-        Ok(result) => {
-            output.push_str("(for-each display (list 1 2 3)) = #<function>\n");
-        }
-        Err(e) => output.push_str(&format!("Error: {}\n", e)),
-    }
+    output.push_str("\n");
     
     let html_content = format!(
         r#"<!DOCTYPE html>
