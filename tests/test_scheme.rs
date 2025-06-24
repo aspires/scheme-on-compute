@@ -47,4 +47,31 @@ mod tests {
         assert!(output.contains("3"));
         assert!(output.contains("true"));
     }
+
+    #[test]
+    fn test_examples_run_without_errors() {
+        let interpreter = SchemeInterpreter::new();
+
+        // List of all example files
+        let examples = [
+            include_str!("../examples/fibonacci.scm"),
+            include_str!("../examples/advanced.scm"),
+            include_str!("../examples/list-processing.scm"),
+            include_str!("../examples/turing-complete.scm"),
+            include_str!("../examples/computational-patterns.scm"),
+        ];
+
+        for (i, example) in examples.iter().enumerate() {
+            let result = interpreter.run_program(example);
+            assert!(
+                result.is_ok(),
+                "Example file {} failed to run: {:?}",
+                i,
+                result.err()
+            );
+            // Optionally: check for some expected output
+            let output = result.unwrap();
+            assert!(!output.is_empty(), "Example file {} produced no output", i);
+        }
+    }
 } 
