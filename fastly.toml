@@ -1,0 +1,16 @@
+# This file describes a Fastly Compute package. To learn more visit:
+# https://www.fastly.com/documentation/reference/compute/fastly-toml
+
+authors = []
+description = ""
+language = "rust"
+manifest_version = 3
+name = "scheme-hello-world"
+service_id = ""
+
+[local_server]
+
+  [local_server.backends]
+
+    [local_server.backends.origin]
+      url = "http://localhost:8080"
