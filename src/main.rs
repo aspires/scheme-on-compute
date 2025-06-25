@@ -120,11 +120,59 @@ fn main(req: Request) -> Result<Response, Error> {
             color: #4CAF50;
             font-weight: bold;
         }}
+        .github-link {{
+            margin-top: 20px;
+            text-align: center;
+        }}
+        .github-link a {{
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }}
+        .github-link a:hover {{
+            background: #4CAF50;
+            color: white;
+        }}
+        .github-header {{
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 20px;
+            border: 3px solid #2E7D32;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }}
+        .github-header a {{
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.5em;
+            padding: 20px 40px;
+            border: 3px solid white;
+            border-radius: 40px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }}
+        .github-header a:hover {{
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+        }}
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🚀 Scheme Lisp on Fastly Compute</h1>
+        
+        <div class="github-header">
+            <a href="https://github.com/aspires/scheme-on-compute" target="_blank">🐙 View on GitHub</a>
+        </div>
         
         <div class="scheme-output">{}</div>
         
@@ -133,6 +181,10 @@ fn main(req: Request) -> Result<Response, Error> {
             <p>This page demonstrates a simple Scheme Lisp interpreter running on <span class="highlight">Fastly Compute@Edge</span>.</p>
             <p>The Scheme code is executed server-side and the results are displayed above.</p>
             <p>This shows how you can run custom programming languages at the edge for dynamic content generation.</p>
+            
+            <div class="github-link">
+                <a href="https://github.com/aspires/scheme-on-compute" target="_blank">🐙 View Source on GitHub</a>
+            </div>
         </div>
     </div>
 </body>

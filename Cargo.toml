@@ -12,10 +12,10 @@ fastly-binary = ["fastly"]
 
 [lib]
 name = "lisp_compute"
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [[bin]]
-name = "main"
+name = "lisp_compute"
 path = "src/main.rs"
 required-features = ["fastly-binary"]
 
