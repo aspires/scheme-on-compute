@@ -1,6 +1,10 @@
-# Scheme Lisp on Fastly Compute
+# Scheme Lisp on Fastly Compute (WARNING: Experimental Only)
 
 > **Note**: This was intentionally an AI-coded project testing Cursor's capabilities for building complex, Turing-complete programming language interpreters.
+
+In Case the above note and comment about "Experimental Only" in the header didn't clue you in -- this isn't designed for production use at the time of publishing and likely never ever will be. This is a concept exploration of using AI to write a language interpreter, and not a production-ready use case in any conceivable definition.
+
+---
 
 A **Turing complete** Scheme Lisp interpreter running on Fastly Compute@Edge, demonstrating how to execute complex programming languages at the edge for dynamic content generation, data processing, and computational tasks.
 
